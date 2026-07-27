@@ -1,26 +1,19 @@
 const fs = require("fs");
 const path = require("path");
-
-const EXT_MAP = {
-  "image/png": ".png",
-  "image/jpeg": ".jpg",
-  "image/gif": ".gif",
-  "image/webp": ".webp",
-  "image/svg+xml": ".svg",
-  "image/bmp": ".bmp",
-  "image/x-icon": ".ico",
-};
-
-function parseDataUrl(dataUrl) {
-  const match = dataUrl.match(/^data:([^;]+);base64,(.+)$/s);
-  if (match) {
-    return { mimeType: match[1], base64: match[2] };
-  }
-  return null;
-}
+const {
+  getFileExtension,
+  parseDataUrl,
+  formatBytes,
+  exitWithError,
+  printSuccess,
+} = require("./mime-config");
 
 function base64ToFile(input, outputPath) {
   const content = input.trim();
+
+  if (!content) {
+    exitWithError("A string Base64 informada está vazia.");
+  }
 
   let base64Data;
   let detectedExt = null;
@@ -28,7 +21,7 @@ function base64ToFile(input, outputPath) {
   const parsed = parseDataUrl(content);
   if (parsed) {
     base64Data = parsed.base64;
-    detectedExt = EXT_MAP[parsed.mimeType] || null;
+    detectedExt = getFileExtension(parsed.mimeType);
   } else {
     base64Data = content;
   }
@@ -37,34 +30,31 @@ function base64ToFile(input, outputPath) {
   if (outputPath) {
     finalPath = path.resolve(outputPath);
   } else {
-    const ext = detectedExt || ".png";
+    const ext = detectedExt || ".bin";
     finalPath = path.resolve(`output${ext}`);
   }
 
-  const buffer = Buffer.from(base64Data, "base64");
+  try {
+    const buffer = Buffer.from(base64Data, "base64");
 
-  if (buffer.length === 0) {
-    console.error(
-      "Erro: O conteúdo Base64 resultou em um buffer vazio. Verifique a string de entrada.",
+    if (buffer.length === 0) {
+      exitWithError(
+        "O conteúdo Base64 gerou um arquivo com 0 bytes. Verifique se a string de entrada é um Base64 válido.",
+      );
+    }
+
+    const dir = path.dirname(finalPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    fs.writeFileSync(finalPath, buffer);
+    printSuccess(
+      `Arquivo restaurado com sucesso em: ${finalPath} (${formatBytes(buffer.length)})`,
     );
-    process.exit(1);
+  } catch (err) {
+    exitWithError(`Falha ao converter Base64 para arquivo: ${err.message}`);
   }
-
-  const dir = path.dirname(finalPath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-
-  fs.writeFileSync(finalPath, buffer);
-  console.log(`Arquivo salvo em: ${finalPath} (${formatBytes(buffer.length)})`);
-}
-
-function formatBytes(bytes) {
-  if (bytes === 0) return "0 B";
-  const k = 1024;
-  const sizes = ["B", "KB", "MB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
 const args = process.argv.slice(2);
@@ -83,8 +73,8 @@ if (args.length === 0 || args.includes("--help")) {
     --help      Mostra esta mensagem
 
   Exemplos:
-    node base64-to-file.js resultado.txt --out foto.png
-    node base64-to-file.js "data:image/png;base64,iVBOR..." --out foto.png
+    node base64-to-file.js resultado.txt --out documento.pdf
+    node base64-to-file.js "data:application/pdf;base64,JVBERi0..."
   `);
   process.exit(0);
 }
@@ -97,7 +87,10 @@ try {
   let base64Content;
 
   const inputPath = path.resolve(input);
-  if (fs.existsSync(inputPath) && fs.statSync(inputPath).isFile()) {
+  if (fs.existsSync(inputPath)) {
+    if (!fs.statSync(inputPath).isFile()) {
+      exitWithError(`O caminho informado "${input}" não é um arquivo válido.`);
+    }
     base64Content = fs.readFileSync(inputPath, "utf-8");
   } else {
     base64Content = input;
@@ -105,6 +98,5 @@ try {
 
   base64ToFile(base64Content, outFile);
 } catch (error) {
-  console.error(`Erro ao processar: ${error.message}`);
-  process.exit(1);
+  exitWithError(`Erro ao processar a entrada: ${error.message}`);
 }

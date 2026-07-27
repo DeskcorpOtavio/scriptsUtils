@@ -1,36 +1,34 @@
 const fs = require("fs");
 const path = require("path");
+const { getMimeType, exitWithError } = require("./mime-config");
 
 function convertImageToBase64(filePath) {
+  const absolutePath = path.resolve(filePath);
+
+  if (!fs.existsSync(absolutePath)) {
+    exitWithError(`Imagem não encontrada: "${filePath}". Verifique o caminho digitado.`);
+  }
+
   try {
-    const absolutePath = path.resolve(filePath);
-    if (!fs.existsSync(absolutePath)) {
-      console.error(`Error: File not found at ${absolutePath}`);
-      process.exit(1);
+    const mimeType = getMimeType(absolutePath);
+
+    if (!mimeType.startsWith("image/")) {
+      exitWithError(`O arquivo "${filePath}" não possui um formato de imagem válido.`);
     }
-
-    const ext = path.extname(absolutePath).toLowerCase();
-    let mimeType = "image/jpeg";
-
-    if (ext === ".png") mimeType = "image/png";
-    else if (ext === ".gif") mimeType = "image/gif";
-    else if (ext === ".webp") mimeType = "image/webp";
-    else if (ext === ".svg") mimeType = "image/svg+xml";
 
     const fileBuffer = fs.readFileSync(absolutePath);
     const base64String = fileBuffer.toString("base64");
 
     return `data:${mimeType};base64,${base64String}`;
   } catch (error) {
-    console.error(`Error processing file: ${error.message}`);
-    process.exit(1);
+    exitWithError(`Erro ao ler imagem: ${error.message}`);
   }
 }
 
 const args = process.argv.slice(2);
-if (args.length === 0) {
-  console.log("Usage: node image-to-base64.js <path-to-image>");
-  process.exit(1);
+if (args.length === 0 || args.includes("--help")) {
+  console.log("Uso: node image-to-base64.js <caminho-para-imagem>");
+  process.exit(0);
 }
 
 const imagePath = args[0];
