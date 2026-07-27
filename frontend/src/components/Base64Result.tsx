@@ -5,10 +5,22 @@ interface Base64ResultProps {
   base64: string;
   fileName: string;
   onCopyError?: (message: string) => void;
+  accentColor?: "blue" | "violet" | "emerald";
 }
 
-export function Base64Result({ base64, fileName, onCopyError }: Base64ResultProps) {
+export function Base64Result({
+  base64,
+  fileName,
+  onCopyError,
+  accentColor = "blue",
+}: Base64ResultProps) {
   const [copied, setCopied] = useState(false);
+
+  const ringStyles = {
+    blue: "focus:ring-blue-500/50",
+    violet: "focus:ring-violet-500/50",
+    emerald: "focus:ring-emerald-500/50",
+  }[accentColor];
 
   const handleCopy = async () => {
     try {
@@ -51,7 +63,7 @@ export function Base64Result({ base64, fileName, onCopyError }: Base64ResultProp
       <textarea
         readOnly
         value={base64}
-        className="w-full h-36 p-3 text-xs font-mono bg-neutral-950 border border-neutral-800 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+        className={`w-full h-36 p-3 text-xs font-mono bg-neutral-950 border border-neutral-800 rounded-lg resize-none focus:outline-none focus:ring-2 ${ringStyles}`}
       />
     </div>
   );

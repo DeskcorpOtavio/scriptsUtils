@@ -1,14 +1,17 @@
-import { ImageIcon, Trash2 } from "lucide-react";
+import { ImageIcon } from "lucide-react";
+import { Trash2 } from "lucide-react";
+import React from "react";
 
 interface FileInfoBarProps {
   fileName: string;
   onClear: () => void;
+  icon?: React.ReactNode;
 }
 
-export function FileInfoBar({ fileName, onClear }: FileInfoBarProps) {
+export function FileInfoBar({ fileName, onClear, icon }: FileInfoBarProps) {
   return (
     <div className="flex items-center gap-3 p-3 bg-neutral-900 border border-neutral-800 rounded-lg text-sm">
-      <ImageIcon className="w-5 h-5 text-blue-400 shrink-0" />
+      {icon ? icon : <ImageIcon className="w-5 h-5 text-blue-400 shrink-0" />}
       <span className="flex-1 truncate font-medium">{fileName}</span>
       <button
         onClick={onClear}

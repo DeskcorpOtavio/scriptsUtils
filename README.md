@@ -1,6 +1,6 @@
 # 🛠️ Scripts Utils
 
-Coleção de utilitários para o dia a dia de desenvolvimento. Inclui um **script Node.js** para conversão de imagens em Base64 via terminal e uma **interface web** moderna para fazer o mesmo pelo navegador.
+Coleção de utilitários para o dia a dia de desenvolvimento. Inclui **scripts Node.js** para conversão de arquivos em Base64 (e vice-versa) via terminal e uma **interface web** moderna para converter imagens pelo navegador.
 
 ---
 
@@ -9,27 +9,29 @@ Coleção de utilitários para o dia a dia de desenvolvimento. Inclui um **scrip
 ```
 scripts-utils/
 ├── utils/
-│   └── image-to-base64.js      # Script Node.js (CLI)
-├── frontend/                    # Interface web (React)
+│   ├── image-to-base64.js   # Imagem → Base64 (CLI simples)
+│   ├── file-to-base64.js    # Qualquer arquivo → Base64 (CLI avançado)
+│   └── base64-to-file.js    # Base64 → Arquivo (CLI)
+├── frontend/                 # Interface web (React)
 │   └── src/
-│       ├── App.tsx              # Componente raiz
-│       ├── types.ts             # Interfaces TypeScript
-│       ├── constants.ts         # Constantes da aplicação
+│       ├── App.tsx
+│       ├── types.ts
+│       ├── constants.ts
 │       ├── hooks/
-│       │   ├── useToast.ts      # Hook de notificações
-│       │   └── useImageConverter.ts  # Lógica de conversão
+│       │   ├── useToast.ts
+│       │   └── useImageConverter.ts
 │       ├── components/
-│       │   ├── UploadArea.tsx    # Área de upload (drag & drop)
-│       │   ├── ImagePreview.tsx  # Preview da imagem
-│       │   ├── Base64Result.tsx  # Resultado + copiar/baixar
-│       │   ├── FileInfoBar.tsx   # Barra de info do arquivo
-│       │   ├── DetailsPanel.tsx  # Painel de detalhes (tipo, dimensões)
-│       │   ├── HistoryPanel.tsx  # Histórico de conversões
-│       │   ├── StatCard.tsx      # Card de estatística
-│       │   └── ToastStack.tsx    # Notificações toast
+│       │   ├── UploadArea.tsx
+│       │   ├── ImagePreview.tsx
+│       │   ├── Base64Result.tsx
+│       │   ├── FileInfoBar.tsx
+│       │   ├── DetailsPanel.tsx
+│       │   ├── HistoryPanel.tsx
+│       │   ├── StatCard.tsx
+│       │   └── ToastStack.tsx
 │       └── utils/
-│           └── format.ts        # Funções auxiliares (formatBytes, timeAgo)
-├── public/                      # Arquivos públicos
+│           └── format.ts
+├── public/
 └── package.json
 ```
 
@@ -41,23 +43,88 @@ scripts-utils/
 
 - [Node.js](https://nodejs.org/) v18+
 
-### Script CLI
+---
 
-Converta uma imagem para Base64 diretamente pelo terminal:
+### 🖼️ Imagem → Base64 (simples)
 
 ```bash
 node utils/image-to-base64.js <caminho-da-imagem>
 ```
 
-**Exemplo:**
+Suporta PNG, JPG, GIF, WEBP e SVG. Retorna a Data URL no terminal.
+
+---
+
+### 📄 Qualquer Arquivo → Base64 (avançado)
 
 ```bash
-node utils/image-to-base64.js public/selfie.png
+node utils/file-to-base64.js <caminho-do-arquivo> [opções]
 ```
 
-A saída será a string `data:<mime>;base64,...` impressa no terminal.
+**Opções:**
 
-### Interface Web
+| Flag | Descrição |
+|---|---|
+| `--raw` | Retorna apenas o Base64 puro, sem o prefixo `data:` |
+| `--out <arquivo>` | Salva o resultado em um arquivo `.txt` |
+| `--help` | Exibe a ajuda |
+
+**Formatos suportados:**
+
+| Categoria | Extensões |
+|---|---|
+| Imagens | PNG, JPG, GIF, WEBP, SVG, BMP, ICO |
+| Documentos | PDF, DOC(X), XLS(X), PPT(X), CSV |
+| Texto | TXT, HTML, CSS, JS, JSON, XML, MD |
+| Áudio | MP3, WAV, OGG |
+| Vídeo | MP4, WEBM |
+| Outros | ZIP, GZ, TAR, WOFF(2), TTF, OTF |
+
+**Exemplos:**
+
+```bash
+# Converter um PDF para Base64 e imprimir no terminal
+node utils/file-to-base64.js documento.pdf
+
+# Converter e salvar em arquivo
+node utils/file-to-base64.js foto.png --out resultado.txt
+
+# Base64 puro (sem data URL)
+node utils/file-to-base64.js audio.mp3 --raw
+```
+
+---
+
+### 🔄 Base64 → Arquivo
+
+```bash
+node utils/base64-to-file.js <entrada> [opções]
+```
+
+A entrada pode ser:
+- Um **caminho** para um arquivo `.txt` contendo a string Base64
+- Uma **string Base64** diretamente (Data URL ou raw)
+
+**Opções:**
+
+| Flag | Descrição |
+|---|---|
+| `--out <arquivo>` | Define o caminho e nome do arquivo de saída |
+| `--help` | Exibe a ajuda |
+
+**Exemplos:**
+
+```bash
+# A partir de um arquivo .txt contendo o Base64
+node utils/base64-to-file.js resultado.txt --out foto.png
+
+# A partir de uma string Data URL diretamente
+node utils/base64-to-file.js "data:image/png;base64,iVBOR..." --out foto.png
+```
+
+---
+
+### 🌐 Interface Web
 
 1. Instale as dependências:
 
@@ -74,22 +141,17 @@ npm run dev
 
 3. Acesse no navegador: **http://localhost:5173**
 
----
+**Funcionalidades da interface:**
 
-## ✨ Funcionalidades
-
-| Funcionalidade | CLI | Web |
-|---|:---:|:---:|
-| Conversão de imagem para Base64 | ✅ | ✅ |
-| Suporte a PNG, JPG, GIF, WEBP, SVG | ✅ | ✅ |
-| Preview da imagem | — | ✅ |
-| Copiar para a área de transferência | — | ✅ |
-| Baixar resultado como `.txt` | — | ✅ |
-| Drag & Drop | — | ✅ |
-| Detalhes (tipo, dimensões, tamanho) | — | ✅ |
-| Histórico de conversões | — | ✅ |
-| Validação de tipo e tamanho (máx 10 MB) | — | ✅ |
-| Notificações de erro/sucesso | — | ✅ |
+- Upload de imagens por clique ou drag & drop
+- Preview em tempo real
+- Conversão instantânea para Base64
+- Copiar para a área de transferência
+- Baixar resultado como `.txt`
+- Painel de detalhes (tipo, dimensões, tamanho)
+- Histórico das últimas 20 conversões
+- Validação de tipo e tamanho (máx 10 MB)
+- Notificações de erro e sucesso
 
 ---
 

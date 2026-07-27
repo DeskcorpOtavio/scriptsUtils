@@ -15,5 +15,15 @@ export function useToast() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  return { toasts, pushToast, removeToast };
+  const onSuccess = useCallback(
+    (msg: string) => pushToast(msg, "success"),
+    [pushToast]
+  );
+
+  const onError = useCallback(
+    (msg: string) => pushToast(msg, "error"),
+    [pushToast]
+  );
+
+  return { toasts, pushToast, removeToast, onSuccess, onError };
 }

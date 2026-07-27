@@ -6,9 +6,24 @@ import { formatBytes } from "../utils/format";
 interface UploadAreaProps {
   loading: boolean;
   onFileSelect: (file: File) => void;
+  accept?: string;
+  title?: string;
+  dragTitle?: string;
+  subtitle?: string;
+  maxSize?: number;
+  accentColor?: "blue" | "violet" | "emerald";
 }
 
-export function UploadArea({ loading, onFileSelect }: UploadAreaProps) {
+export function UploadArea({
+  loading,
+  onFileSelect,
+  accept = "image/*",
+  title = "Clique ou arraste uma imagem",
+  dragTitle = "Solte a imagem aqui",
+  subtitle = "PNG, JPG, GIF, WEBP, SVG",
+  maxSize = MAX_FILE_SIZE,
+  accentColor = "blue",
+}: UploadAreaProps) {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -32,28 +47,38 @@ export function UploadArea({ loading, onFileSelect }: UploadAreaProps) {
     if (file) onFileSelect(file);
   };
 
+  const borderStyles = {
+    blue: isDragging ? "border-blue-500 bg-blue-500/10" : "border-neutral-700 hover:border-neutral-500 hover:bg-neutral-800/50",
+    violet: isDragging ? "border-violet-500 bg-violet-500/10" : "border-neutral-700 hover:border-neutral-500 hover:bg-neutral-800/50",
+    emerald: isDragging ? "border-emerald-500 bg-emerald-500/10" : "border-neutral-700 hover:border-neutral-500 hover:bg-neutral-800/50",
+  }[accentColor];
+
+  const spinnerStyles = {
+    blue: "border-t-blue-400",
+    violet: "border-t-violet-400",
+    emerald: "border-t-emerald-400",
+  }[accentColor];
+
   return (
     <div
       onClick={() => fileInputRef.current?.click()}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
-      className={`relative border-2 border-dashed rounded-xl p-12 flex flex-col items-center justify-center cursor-pointer transition-all ${
-        isDragging
-          ? "border-blue-500 bg-blue-500/10"
-          : "border-neutral-700 hover:border-neutral-500 hover:bg-neutral-800/50"
-      } ${loading ? "pointer-events-none opacity-60" : ""}`}
+      className={`relative border-2 border-dashed rounded-xl p-12 flex flex-col items-center justify-center cursor-pointer transition-all ${borderStyles} ${
+        loading ? "pointer-events-none opacity-60" : ""
+      }`}
     >
       {loading ? (
-        <div className="w-8 h-8 border-2 border-neutral-500 border-t-blue-400 rounded-full animate-spin" />
+        <div className={`w-8 h-8 border-2 border-neutral-500 ${spinnerStyles} rounded-full animate-spin`} />
       ) : (
         <>
           <Upload className="w-10 h-10 mb-4 text-neutral-500" />
           <p className="text-lg font-medium text-neutral-300">
-            {isDragging ? "Solte a imagem aqui" : "Clique ou arraste uma imagem"}
+            {isDragging ? dragTitle : title}
           </p>
           <p className="text-sm text-neutral-500 mt-1">
-            PNG, JPG, GIF, WEBP, SVG — até {formatBytes(MAX_FILE_SIZE)}
+            {subtitle} — até {formatBytes(maxSize)}
           </p>
         </>
       )}
@@ -61,7 +86,7 @@ export function UploadArea({ loading, onFileSelect }: UploadAreaProps) {
         type="file"
         className="hidden"
         ref={fileInputRef}
-        accept="image/*"
+        accept={accept}
         onChange={handleFileChange}
       />
     </div>
