@@ -4,7 +4,8 @@
   "description": "",
   "main": "image-to-base64.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "switch": "tsx utils/switchGitCredencials.ts"
   },
   "repository": {
     "type": "git",
@@ -17,5 +18,14 @@
   "bugs": {
     "url": "https://github.com/DeskcorpOtavio/scriptsUtils/issues"
   },
-  "homepage": "https://github.com/DeskcorpOtavio/scriptsUtils#readme"
+  "homepage": "https://github.com/DeskcorpOtavio/scriptsUtils#readme",
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.23.5",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2"
+  }
 }
